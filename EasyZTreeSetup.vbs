@@ -115,35 +115,22 @@ End Function
 ' Prompts the user to select a file qualified by the file type specified, and returns
 ' the absolute path to the selected file.
 '
-' @param defaultDirectory The default directory for the file selector. 
-' @param fileTypeFilter The default file filter. String required.
-' 
 ' @return String absolute file path 
 '--
 Function getPathToSelectedFile( defaultDirectory, fileTypeFilter )
-    Dim objDialog
-    Set objDialog = CreateObject( "UserAccounts.CommonDialog" )
+   getPathToSelectedFile = ""
 
-    If defaultDirectory = "" Then
-        objDialog.InitialDir = CreateObject( "WScript.Shell" ).SpecialFolders( "Desktop" )
-    Else
-        ' Use the specified initial folder
-        objDialog.InitialDir = defaultDirectory
-    End If
+     strMSHTA = "mshta.exe ""about:<input type=file id=FILE>" _
+              & "<script>FILE.click();new ActiveXObject('Scripting.FileSystemObject')" _
+              & ".GetStandardStream(1).WriteLine(FILE.value);close();resizeTo(0,0);</script>"""
 
-    If fileTypeFilter = "" Then
-        ' Default file filter is "All files"
-        objDialog.Filter = "All files|*.*"
-    Else
-        ' Use the specified file filter
-        objDialog.Filter = fileTypeFilter
-    End If
+    Set wshShell = CreateObject( "WScript.Shell" )
+    Set objExec = wshShell.Exec( strMSHTA )
 
-    If objDialog.ShowOpen Then
-        getPathToSelectedFile = objDialog.FileName
-    Else
-        getPathToSelectedFile = ""
-    End If
+    getPathToSelectedFile = objExec.StdOut.ReadLine( )
+
+    Set objExec = Nothing
+    Set wshShell = Nothing
 End Function
 
 
