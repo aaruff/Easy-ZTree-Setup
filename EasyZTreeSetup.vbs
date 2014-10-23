@@ -27,16 +27,17 @@ On Error Resume Next
 ' @param sourceFile Source file name
 ' @param destinationFolder String Absolute path to the destination filder
 '
-' @return boolean true of file was successfully copied, otherwise false is returned.
+' @return boolean True of file was successfully copied, otherwise False is returned.
 '--
 Function copyToFolder(sourceFile, destinationFolder)
     Dim FileSystemObject : Set FileSystemObject = CreateObject("Scripting.FileSystemObject")
-	FileSystemObject.CopyFile sourceFile, destinationFolder, true
-    If Not(FileSystemObject.FileExists(destinationFolder & sourceFile)) Then
-        copyToFolder = false
+	FileSystemObject.CopyFile sourceFile, destinationFolder, True
+    If Not(FileSystemObject.FileExists(destinationFolder)) Then
+        copyToFolder = False
     Else
-        copyToFolder = true
+        copyToFolder = True
     End If
+    Set FileSystemObject = Nothing
 End Function
 
 
@@ -98,10 +99,10 @@ Function getLanguage()
 
     Dim selectedLanguageId : selectedLanguageId = InputBox(message,"Step 3: Select a Default Language", 1)
      Dim regex : Set regex = New RegExp
-	regex.Global = false
-	regex.IgnoreCase = true
+	regex.Global = False
+	regex.IgnoreCase = True
 	regex.Pattern = "([0-9]|1[0-7])"
-    If regex.Test(selectedLanguageId) = false Then
+    If regex.Test(selectedLanguageId) = False Then
         msgbox "You didn't enter a language code, or the one you entered is out of range, so I'll use English as your default language.", vbInformation, "Default Language: English"
         selectedLanguageId = 0
         Exit Function
@@ -117,12 +118,15 @@ End Function
 '
 ' @return String absolute file path 
 '--
-Function getPathToSelectedFile( defaultDirectory, fileTypeFilter )
-   getPathToSelectedFile = ""
+Function getPathToSelectedFile()
+    Dim objExec, strMSHTA, wshShell
 
-     strMSHTA = "mshta.exe ""about:<input type=file id=FILE>" _
-              & "<script>FILE.click();new ActiveXObject('Scripting.FileSystemObject')" _
-              & ".GetStandardStream(1).WriteLine(FILE.value);close();resizeTo(0,0);</script>"""
+    getPathToSelectedFile = ""
+
+    ' For use in HTAs as well as "plain" VBScript:
+    strMSHTA = "mshta.exe ""about:" & "<" & "input type=file id=FILE>" _
+             & "<" & "script>FILE.click();new ActiveXObject('Scripting.FileSystemObject')" _
+             & ".GetStandardStream(1).WriteLine(FILE.value);close();resizeTo(0,0);" & "<" & "/script>"""
 
     Set wshShell = CreateObject( "WScript.Shell" )
     Set objExec = wshShell.Exec( strMSHTA )
@@ -142,7 +146,7 @@ End Function
 ' @param linkName The link alias for the source file
 ' @param shortcutOptions The execution options padded to the source file via the link
 ' 
-' @return boolean true if linked succeeeded, otherwise false is returned 
+' @return boolean True if linked succeeeded, otherwise False is returned 
 '--
 Function createShortcut(sourceFile, targetPath, linkName, shortcutOptions)
     Dim FileSystemObject : Set FileSystemObject = CreateObject("Scripting.FileSystemObject")
@@ -157,9 +161,9 @@ Function createShortcut(sourceFile, targetPath, linkName, shortcutOptions)
     Shortcut.Save
 
     If Not(FileSystemObject.FileExists(targetPath & "\" & linkName)) Then
-        createShortcut = false
+        createShortcut = False
     Else
-        createShortcut = true
+        createShortcut = True
     End If
     
 End Function
@@ -167,17 +171,15 @@ End Function
 
 '--
 ' Returns the absolute path to the selected executable file 
-
-' @param defaultDir The default directory the file selector displays 
-' @param fileName The file type to open 
+'
 ' @param message
 ' @param messageTitle
 ' 
-' @return boolean true if a file was selected, otherwise false is returned 
+' @return boolean True if a file was selected, otherwise False is returned 
 '--
-Function getExePath(defaultDir, fileName, message, messageTitle)
+Function getExePath(message, messageTitle)
     msgbox message, vbInformation, messageTitle 
-	getExePath = getPathToSelectedFile(defaultDir, fileName & "|*.exe")
+	getExePath = getPathToSelectedFile()
 End Function
 
 
@@ -187,7 +189,7 @@ End Function
 ' @param path The directory in which to create a new directory 
 ' @param folderName The name to be used for the newly created folder
 ' 
-' @return boolean true if a folder was created, otherwise false is returned 
+' @return boolean True if a folder was created, otherwise False is returned 
 '--
 Function createFolder(path, folderName)
     Dim FileSystemObject : Set FileSystemObject = CreateObject("Scripting.FileSystemObject")
@@ -198,9 +200,9 @@ Function createFolder(path, folderName)
 
     ' Test folder creation
     If Not(FileSystemObject.FolderExists(path & "\" & folderName)) Then
-        createFolder = false
+        createFolder = False
     Else
-        createFolder = true
+        createFolder = True
     End If 
 End Function
 
@@ -235,9 +237,9 @@ Function generateLeafKillScript(zLeafProgram, zTreeFolder)
     KillZleafScript.Close
 
     If Not(FileSystemObject.FileExists(zTreeFolder & killZLeafScriptName)) Then
-        getCurrentPath = false
+        generateLeafKillScript = False
     Else
-        getCurrentPath = true
+        generateLeafKillScript = True
     End If
 End Function
 
@@ -250,31 +252,34 @@ Function main()
     ' Get the location of the Z-Tree.exe
     Dim zTreeFileName : zTreeFileName = "Z-Tree.exe"
     Dim zTreeMessage : zTreeMessage = "At the next screen please select the " & zTreeFileName & " program."
-    Dim zTreeProgram : zTreeProgram = getExePath(desktopPath, ZTreeFileName, zTreeMessage , "Step 1: Select Z-Tree")
+    Dim zTreeProgram : zTreeProgram = getExePath(zTreeMessage , "Step 1: Select Z-Tree")
 	If zTreeProgram = "" Then
         msgbox "To setup your Z-Tree programming environment I need to know the location of the Z-Tree.exe program, in order to copy it into your development folder." & vbCrLf &_
         " If you don't have Z-Tree you can find out how to get it at www.iew.uzh.ch/ztree/howtoget.php", vbCritical, "Error"
-		main = false
+		main = False
         Exit Function
 	End If
+
+	msgbox zTreeProgram
 
     ' Get the location of the Z-Tree.exe
     Dim zLeafFileName : zLeafFileName = "Z-Leaf.exe"
     Dim zLeafMessage : zLeafMessage = "At the next screen please select the " & zLeafFileName & " program."
-    Dim zLeafProgram : zLeafProgram = getExePath(desktopPath, zLeafFileName, zLeafMessage, "Step 2: Select Z-Leaf") 
+    Dim zLeafProgram : zLeafProgram = getExePath(zLeafMessage, "Step 2: Select Z-Leaf") 
 	If zLeafProgram = "" Then
         msgbox "To setup your Z-Tree programming environment I need to know the location of the Z-Leaf.exe program, in order to copy it into your development folder." & vbCrLf &_ 
         " If you don't have Z-Tree you can find out how to get it at www.iew.uzh.ch/ztree/howtoget.php", vbCritical, "Error"
-		main = false
+		main = False
         Exit Function
 	End If
+	msgbox zLeafProgram
 
     Dim language : language = getLanguage()
 
 	' Create the Z-Tree Folder on the Desktop
 	If Not(createFolder(desktopPath, "Z-Tree")) Then
 		msgbox "I wasn't able to create the Z-Tree directory. Please make sure you have permission to modify this directory.", vbCritical, "Error"
-		main = false
+		main = False
         Exit Function
     End If
 
@@ -285,30 +290,30 @@ Function main()
     For Each folder In zTreeSubDirectories
         If Not(createFolder(zTreeFolder, folder)) Then
             msgbox "I wasn't able to create the Z-Tree directory. Please make sure you have permission to modify that directory.", vbCritical, "Error"
-            main = false
+            main = False
             Exit Function
         End If
     Next
 
 	' Copy the Z-Tree ztree folder
-	If Not(copyToFolder(zTreeProgram, zTreeFolder & "\ztree\")) Then
+	If Not(copyToFolder(zTreeProgram, zTreeFolder & "\ztree\ztree.exe")) Then
         msgbox "I wasn't able to copy " & zTreeProgram & " to " & zTreeFolder & "\ztree\" & ". Please check your directory and file permissions.", vbCritical, "Error"
-        main = false
+        main = False
         Exit Function
     End If
 
 	' Copy the Z-Leaf ztree folder
-	If Not(copyToFolder(zLeafProgram, zTreeFolder & "\ztree\")) Then
+	If Not(copyToFolder(zLeafProgram, zTreeFolder & "\ztree\zleaf.exe")) Then
         msgbox "I wasn't able to copy " & zLeafProgram & " to " & zTreeFolder & "\ztree\" & ". Please check your directory and file permissions.", vbCritical, "Error"
-        main = false
+        main = False
         Exit Function
     End If
 
 	' Create the Z-Tree shortcut
     Dim zTreeOptions : zTreeOptions =  "/datadir .\data /leafdir .\data /privdir .\payoffs /gsfdir .\backups /tempdir .\backups /language " & language
-    If Not(createShortcut(zTreeProgram, zTreeFolder, "tree.lnk", zTreeOptions)) Then
+    If Not(createShortcut(zTreeFolder & "\ztree\ztree.exe", zTreeFolder, "tree.lnk", zTreeOptions)) Then
         msgbox "I wasn't able to the Z-Tree shortcut from " & zTreeProgram & " to " & zTreeFolder & "\tree.lnk. Please check your directory and file permissions.", vbCritical, "Error"
-        main = false
+        main = False
         Exit Function
     End If
 
@@ -319,9 +324,9 @@ Function main()
     yIncrement = 480
     For i = 0 To 3 
         zLeafOptions =  "/name player" & i+1 & " /language " & language & " /size " & xIncrement & "x" & yIncrement & " /position " & x & "," & y
-        If Not(createShortcut(zLeafProgram, zTreeFolder, "leaf" & i+1 & ".lnk", zLeafOptions)) Then
+        If Not(createShortcut(zTreeFolder & "\ztree\zleaf.exe", zTreeFolder, "leaf" & i+1 & ".lnk", zLeafOptions)) Then
             msgbox "I wasn't able to the Z-Leaf shortcut from " & zTreeProgram & " to " & zTreeFolder & "\leaf" & i+1 & ".lnk. Please check your directory and file permissions.", vbCritical, "Error"
-            main = false
+            main = False
             Exit Function
         End If
 
@@ -335,11 +340,11 @@ Function main()
     
     If Not(generateLeafKillScript(zLeafProgram, zTreeFolder)) Then
         msgbox "I wasn't able to create your kill-zleaves script. Please check that your directory and file permission.", vbCritical, "Error"
-        main = false
+        main = False
         Exit Function
     End If
 
-    main = true
+    main = True
 End Function
 
 Dim result : result = main()
