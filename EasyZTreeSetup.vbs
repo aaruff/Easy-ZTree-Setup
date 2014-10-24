@@ -338,7 +338,7 @@ Function main()
         End If
     Next
     
-    If Not(generateLeafKillScript(zLeafProgram, zTreeFolder)) Then
+    If Not(generateLeafKillScript("zleaf.exe", zTreeFolder)) Then
         msgbox "I wasn't able to create your kill-zleaves script. Please check that your directory and file permission.", vbCritical, "Error"
         main = False
         Exit Function
