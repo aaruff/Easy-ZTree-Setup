@@ -318,8 +318,8 @@ Function main()
     Dim i, x, y, xIncrement, yIncrement, zLeafOptions
     x = 0
     y = 0
-    xIncrement = 640
-    yIncrement = 480
+    xIncrement = 1280 
+    yIncrement = 800
     For i = 0 To 3 
         zLeafOptions =  "/name player" & i+1 & " /language " & language & " /size " & xIncrement & "x" & yIncrement & " /position " & x & "," & y
         If Not(createShortcut(zTreeFolder & "\ztree\zleaf.exe", zTreeFolder, "leaf" & i+1 & ".lnk", zLeafOptions)) Then
@@ -330,9 +330,9 @@ Function main()
 
         If (i+1) Mod 2 = 0 Then
             x = 0
-            y = y + yIncrement
+            y = y + yIncrement/2
         Else
-            x = x + xIncrement
+            x = x + xIncrement/2
         End If
     Next
     
