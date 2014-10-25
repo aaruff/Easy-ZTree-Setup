@@ -308,7 +308,7 @@ Function main()
     End If
 
 	' Create the Z-Tree shortcut
-    Dim zTreeOptions : zTreeOptions =  "/datadir .\data /leafdir .\data /privdir .\payoffs /gsfdir .\backups /tempdir .\backups /language " & language
+    Dim zTreeOptions : zTreeOptions =  "/datadir " & zTreeFolder & "\data /leafdir " & zTreeFolder & "\data /privdir " & zTreeFolder & "\payoffs /gsfdir " & zTreeFolder & "\backups /tempdir " & zTreeFolder & "\backups /language " & language
     If Not(createShortcut(zTreeFolder & "\ztree\ztree.exe", zTreeFolder, "tree.lnk", zTreeOptions)) Then
         msgbox "I wasn't able to the Z-Tree shortcut from " & zTreeProgram & " to " & zTreeFolder & "\tree.lnk. Please check your directory and file permissions.", vbCritical, "Error"
         main = False
