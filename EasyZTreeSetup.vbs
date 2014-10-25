@@ -221,15 +221,13 @@ Function generateLeafKillScript(zLeafProgram, zTreeFolder)
     Dim killZLeafScriptName : killZLeafScriptName = "\kill-Zleaves.vbs"
     ' Get the name of the Z-Leaf.exe
     Dim FileSystemObject : Set FileSystemObject = CreateObject("Scripting.FileSystemObject")
-    Dim ZLeafFile : set ZLeafFile = FileSystemObject.GetFile(zLeafProgram)
-    Dim fileName : fileName = FileSystemObject.GetFileName(ZLeafFile)
 
     ' Build script to kill leaves
     Dim KillZleafScript : Set KillZleafScript = FileSystemObject.CreateTextFile(zTreeFolder & killZLeafScriptName, True)
     KillZleafScript.WriteLine("Option Explicit")
     KillZleafScript.WriteLine("On Error Resume Next")
     KillZleafScript.WriteLine("Dim wmi : Set wmi = GetObject(""winmgmts:"")")
-    KillZleafScript.WriteLine("Dim procs : Set procs= wmi.ExecQuery(""select * from Win32_process where Name='" & fileName & "'"")")
+    KillZleafScript.WriteLine("Dim procs : Set procs= wmi.ExecQuery(""select * from Win32_process where Name='" & zLeafProgram & "'"")")
     KillZleafScript.WriteLine("Dim p")
     KillZleafScript.WriteLine("For Each p in procs")
     KillZleafScript.WriteLine("p.Terminate()")
