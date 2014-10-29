@@ -258,8 +258,6 @@ Function main()
         Exit Function
 	End If
 
-	msgbox zTreeProgram
-
     ' Get the location of the Z-Tree.exe
     Dim zLeafFileName : zLeafFileName = "Z-Leaf.exe"
     Dim zLeafMessage : zLeafMessage = "At the next screen please select the " & zLeafFileName & " program."
@@ -270,7 +268,6 @@ Function main()
 		main = False
         Exit Function
 	End If
-	msgbox zLeafProgram
 
     Dim language : language = getLanguage()
 
